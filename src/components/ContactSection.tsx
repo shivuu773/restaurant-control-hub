@@ -6,9 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 const ContactSection = () => {
   const { toast } = useToast();
+  const { settings } = useSiteSettings();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
 
@@ -27,6 +29,13 @@ const ContactSection = () => {
     }
   };
 
+  const contactInfo = [
+    { icon: MapPin, title: 'Location', text: settings.address },
+    { icon: Clock, title: 'Open Hours', text: settings.opening_hours },
+    { icon: Mail, title: 'Email Us', text: settings.email },
+    { icon: Phone, title: 'Call Us', text: settings.phone },
+  ];
+
   return (
     <section id="contact" className="py-20 bg-section">
       <div className="container mx-auto px-4">
@@ -37,12 +46,7 @@ const ContactSection = () => {
         <div className="grid lg:grid-cols-2 gap-12">
           <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
             <div className="space-y-6">
-              {[
-                { icon: MapPin, title: 'Location', text: '123 Street, New Delhi, India' },
-                { icon: Clock, title: 'Open Hours', text: 'Mon-Sat: 11AM - 11PM' },
-                { icon: Mail, title: 'Email Us', text: 'info@zayka.com' },
-                { icon: Phone, title: 'Call Us', text: '+91 8090-XXX-X16' },
-              ].map((item) => (
+              {contactInfo.map((item) => (
                 <div key={item.title} className="flex items-start space-x-4">
                   <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
                     <item.icon className="h-5 w-5 text-primary" />

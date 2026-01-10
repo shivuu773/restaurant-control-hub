@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState, useRef } from 'react';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 interface StatItemProps {
   end: number;
@@ -59,11 +60,13 @@ const StatItem = ({ end, label, delay }: StatItemProps) => {
 };
 
 const StatsSection = () => {
+  const { settings } = useSiteSettings();
+
   const stats = [
-    { end: 232, label: 'Happy Clients' },
-    { end: 521, label: 'Dishes Served' },
-    { end: 1453, label: 'Hours of Support' },
-    { end: 32, label: 'Team Members' },
+    { end: parseInt(settings.stats_clients) || 232, label: 'Happy Clients' },
+    { end: parseInt(settings.stats_dishes) || 521, label: 'Dishes Served' },
+    { end: parseInt(settings.stats_hours) || 1453, label: 'Hours of Support' },
+    { end: parseInt(settings.stats_team) || 32, label: 'Team Members' },
   ];
 
   return (

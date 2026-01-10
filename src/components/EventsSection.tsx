@@ -1,30 +1,43 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { supabase } from '@/integrations/supabase/client';
 import event1 from '@/assets/event-1.jpg';
 import event2 from '@/assets/event-2.jpg';
 import event3 from '@/assets/event-3.jpg';
 
-const events = [
-  {
-    title: 'Private Parties',
-    description: 'Host your exclusive gatherings in our elegant private dining space with personalized service.',
-    price: 5000,
-    image: event1,
-  },
-  {
-    title: 'Birthday Celebrations',
-    description: 'Make birthdays special with our curated menus, decorations, and memorable experiences.',
-    price: 3500,
-    image: event2,
-  },
-  {
-    title: 'Corporate Events',
-    description: 'Professional settings for business dinners, team celebrations, and corporate meetings.',
-    price: 8000,
-    image: event3,
-  },
+interface Event {
+  id: string;
+  title: string;
+  description: string | null;
+  price: number | null;
+  image_url: string | null;
+  is_active: boolean | null;
+}
+
+const defaultEvents = [
+  { id: '1', title: 'Private Parties', description: 'Host your exclusive gatherings in our elegant private dining space.', price: 5000, image_url: event1, is_active: true },
+  { id: '2', title: 'Birthday Celebrations', description: 'Make birthdays special with our curated menus and memorable experiences.', price: 3500, image_url: event2, is_active: true },
+  { id: '3', title: 'Corporate Events', description: 'Professional settings for business dinners and corporate meetings.', price: 8000, image_url: event3, is_active: true },
 ];
 
 const EventsSection = () => {
+  const [events, setEvents] = useState<Event[]>(defaultEvents);
+
+  useEffect(() => {
+    const loadEvents = async () => {
+      const { data } = await supabase
+        .from('events')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order');
+      
+      if (data && data.length > 0) {
+        setEvents(data);
+      }
+    };
+    loadEvents();
+  }, []);
+
   return (
     <section id="events" className="py-20 bg-section">
       <div className="container mx-auto px-4">
@@ -38,7 +51,7 @@ const EventsSection = () => {
         <div className="grid md:grid-cols-3 gap-8">
           {events.map((event, index) => (
             <motion.div
-              key={event.title}
+              key={event.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -47,7 +60,7 @@ const EventsSection = () => {
             >
               <div className="relative overflow-hidden rounded-xl">
                 <img
-                  src={event.image}
+                  src={event.image_url || '/placeholder.svg'}
                   alt={event.title}
                   className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-110"
                 />
@@ -56,9 +69,11 @@ const EventsSection = () => {
                 <div className="absolute bottom-0 left-0 right-0 p-6">
                   <h3 className="font-heading text-2xl font-bold mb-2">{event.title}</h3>
                   <p className="text-muted-foreground text-sm mb-4">{event.description}</p>
-                  <p className="text-primary font-bold text-xl">
-                    Starting from ₹{event.price.toLocaleString()}
-                  </p>
+                  {event.price && (
+                    <p className="text-primary font-bold text-xl">
+                      Starting from ₹{event.price.toLocaleString()}
+                    </p>
+                  )}
                 </div>
               </div>
             </motion.div>

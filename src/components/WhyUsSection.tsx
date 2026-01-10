@@ -1,7 +1,10 @@
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 const WhyUsSection = () => {
+  const { settings } = useSiteSettings();
+
   return (
     <section className="py-20 bg-section">
       <div className="container mx-auto px-4">
@@ -14,14 +17,10 @@ const WhyUsSection = () => {
         >
           <div className="bg-primary rounded-2xl p-8 md:p-12 text-primary-foreground">
             <h3 className="font-heading text-3xl md:text-4xl font-bold mb-6">
-              Why Choose Zayka?
+              {settings.why_us_title}
             </h3>
             <p className="text-primary-foreground/90 mb-8 leading-relaxed">
-              The moment I took my first bite, I was transported to culinary heaven. 
-              This food is an exquisite symphony of flavors that dance on the taste buds. 
-              Each mouthful is a revelation, a testament to the chef's artistry. 
-              The ingredients are fresh, and the preparation is nothing short of perfection. 
-              It's not just a meal; it's an experience.
+              {settings.why_us_description}
             </p>
             <button className="flex items-center text-primary-foreground font-medium hover:gap-2 transition-all group">
               Learn More 

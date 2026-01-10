@@ -1,8 +1,17 @@
 import { motion } from 'framer-motion';
 import { CheckCircle2, Play } from 'lucide-react';
 import aboutRestaurant from '@/assets/about-restaurant.jpg';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 const AboutSection = () => {
+  const { settings } = useSiteSettings();
+
+  const aboutPoints = [
+    { title: settings.about_point_1_title, text: settings.about_point_1_text },
+    { title: settings.about_point_2_title, text: settings.about_point_2_text },
+    { title: settings.about_point_3_title, text: settings.about_point_3_text },
+  ];
+
   return (
     <section id="about" className="py-20 bg-background">
       <div className="container mx-auto px-4">
@@ -32,7 +41,7 @@ const AboutSection = () => {
               {/* Call Us Box */}
               <div className="absolute bottom-6 left-6 bg-primary text-primary-foreground p-6 rounded-xl">
                 <h4 className="font-heading text-xl font-semibold mb-1">Book a Table</h4>
-                <p className="text-2xl font-bold">+91 8090-XXX-X16</p>
+                <p className="text-2xl font-bold">{settings.phone}</p>
               </div>
             </div>
           </motion.div>
@@ -45,31 +54,21 @@ const AboutSection = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <ul className="space-y-6 mb-8">
-              <li className="flex items-start">
-                <CheckCircle2 className="h-6 w-6 text-primary mr-4 mt-1 flex-shrink-0" />
-                <p className="text-muted-foreground">
-                  <strong className="text-foreground">Culinary Passion:</strong> At Zayka Restaurant, 
-                  our culinary journey is driven by a passion for creating exceptional dining experiences.
-                </p>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle2 className="h-6 w-6 text-primary mr-4 mt-1 flex-shrink-0" />
-                <p className="text-muted-foreground">
-                  <strong className="text-foreground">Authentic Flavors:</strong> We take pride in 
-                  serving authentic dishes that are a celebration of local and global flavors.
-                </p>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle2 className="h-6 w-6 text-primary mr-4 mt-1 flex-shrink-0" />
-                <p className="text-muted-foreground">
-                  <strong className="text-foreground">Chef's Expertise:</strong> Our talented chefs 
-                  bring years of expertise to the kitchen, crafting each dish with precision and creativity.
-                </p>
-              </li>
+              {aboutPoints.map((point, index) => (
+                <li key={index} className="flex items-start">
+                  <CheckCircle2 className="h-6 w-6 text-primary mr-4 mt-1 flex-shrink-0" />
+                  <p className="text-muted-foreground">
+                    <strong className="text-foreground">{point.title}:</strong> {point.text}
+                  </p>
+                </li>
+              ))}
             </ul>
 
             {/* Video Preview */}
-            <div className="relative rounded-xl overflow-hidden group cursor-pointer">
+            <div 
+              className="relative rounded-xl overflow-hidden group cursor-pointer"
+              onClick={() => window.open(settings.hero_video_url, '_blank')}
+            >
               <img
                 src={aboutRestaurant}
                 alt="Watch our story"

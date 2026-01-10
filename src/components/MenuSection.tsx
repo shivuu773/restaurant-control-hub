@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '@/integrations/supabase/client';
 
-// Import unique dish images
+// Import fallback dish images
 import dishSamosa from '@/assets/dish-samosa.jpg';
 import dishButterChicken from '@/assets/dish-butter-chicken.jpg';
 import dishBiryani from '@/assets/dish-biryani.jpg';
@@ -13,9 +14,25 @@ import dishGulabJamun from '@/assets/dish-gulab-jamun.jpg';
 import dishCholeBhature from '@/assets/dish-chole-bhature.jpg';
 import dishPaneerTikka from '@/assets/dish-paneer-tikka.jpg';
 
-const categories = ['Starters', 'Breakfast', 'Lunch', 'Dinner', 'Desserts'];
+interface Category {
+  id: string;
+  name: string;
+}
 
-const menuItems = {
+interface MenuItem {
+  id: string;
+  name: string;
+  price: number;
+  description: string | null;
+  image_url: string | null;
+  category_id: string | null;
+  is_available: boolean | null;
+}
+
+const fallbackImages = [dishSamosa, dishButterChicken, dishBiryani, dishPalakPaneer, dishDalMakhani, dishTandoori, dishDosa, dishGulabJamun, dishCholeBhature, dishPaneerTikka];
+
+const defaultCategories = ['Starters', 'Breakfast', 'Lunch', 'Dinner', 'Desserts'];
+const defaultMenuItems: Record<string, { name: string; price: number; image: string; description: string }[]> = {
   Starters: [
     { name: 'Vegetable Samosa', price: 180, image: dishSamosa, description: 'Crispy pastry with spiced potato filling' },
     { name: 'Paneer Tikka', price: 320, image: dishPaneerTikka, description: 'Grilled cottage cheese with bell peppers' },
@@ -44,7 +61,51 @@ const menuItems = {
 };
 
 const MenuSection = () => {
-  const [activeCategory, setActiveCategory] = useState('Starters');
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [activeCategory, setActiveCategory] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [useDatabase, setUseDatabase] = useState(false);
+
+  useEffect(() => {
+    const loadData = async () => {
+      const [{ data: cats }, { data: items }] = await Promise.all([
+        supabase.from('menu_categories').select('*').order('sort_order'),
+        supabase.from('menu_items').select('*').eq('is_available', true).order('sort_order'),
+      ]);
+
+      if (cats && cats.length > 0 && items && items.length > 0) {
+        setCategories(cats);
+        setMenuItems(items);
+        setActiveCategory(cats[0].id);
+        setUseDatabase(true);
+      } else {
+        setActiveCategory('Starters');
+      }
+      setLoading(false);
+    };
+    loadData();
+  }, []);
+
+  const filteredItems = useDatabase 
+    ? menuItems.filter(item => item.category_id === activeCategory)
+    : (defaultMenuItems[activeCategory] || []);
+
+  const displayCategories = useDatabase 
+    ? categories 
+    : defaultCategories.map((name, i) => ({ id: name, name }));
+
+  if (loading) {
+    return (
+      <section id="menu" className="py-20 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="menu" className="py-20 bg-background">
@@ -57,17 +118,17 @@ const MenuSection = () => {
 
         {/* Category Tabs */}
         <div className="flex flex-wrap justify-center gap-2 md:gap-4 mb-12">
-          {categories.map((category) => (
+          {displayCategories.map((category) => (
             <button
-              key={category}
-              onClick={() => setActiveCategory(category)}
+              key={category.id}
+              onClick={() => setActiveCategory(category.id)}
               className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${
-                activeCategory === category
+                activeCategory === category.id
                   ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/30'
                   : 'bg-secondary text-foreground hover:bg-primary/20'
               }`}
             >
-              {category}
+              {category.name}
             </button>
           ))}
         </div>
@@ -75,7 +136,11 @@ const MenuSection = () => {
         {/* Category Header */}
         <div className="text-center mb-8">
           <p className="text-primary font-medium uppercase tracking-wider text-sm">Menu</p>
-          <h3 className="font-heading text-3xl">{activeCategory}</h3>
+          <h3 className="font-heading text-3xl">
+            {useDatabase 
+              ? categories.find(c => c.id === activeCategory)?.name 
+              : activeCategory}
+          </h3>
         </div>
 
         {/* Menu Items Grid */}
@@ -88,9 +153,9 @@ const MenuSection = () => {
             transition={{ duration: 0.3 }}
             className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
           >
-            {menuItems[activeCategory as keyof typeof menuItems].map((item, index) => (
+            {filteredItems.map((item: any, index: number) => (
               <motion.div
-                key={`${activeCategory}-${item.name}`}
+                key={item.id || item.name}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
@@ -98,7 +163,7 @@ const MenuSection = () => {
               >
                 <div className="relative overflow-hidden">
                   <img
-                    src={item.image}
+                    src={item.image_url || item.image || fallbackImages[index % fallbackImages.length]}
                     alt={item.name}
                     className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
                   />
