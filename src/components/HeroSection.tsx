@@ -62,15 +62,24 @@ const HeroSection = () => {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="order-1 lg:order-2"
+            className="order-1 lg:order-2 flex justify-center"
           >
             <div className="relative">
-              <div className="absolute inset-0 bg-primary/20 rounded-full blur-3xl" />
-              <img
-                src={heroFood}
-                alt="Delicious Indian food platter"
-                className="relative z-10 w-full max-w-lg mx-auto drop-shadow-2xl"
-              />
+              {/* Glowing background effect */}
+              <div className="absolute inset-0 bg-primary/30 rounded-full blur-3xl scale-110" />
+              {/* Decorative ring */}
+              <div className="absolute inset-0 rounded-full border-4 border-primary/30 scale-105" />
+              {/* Main circular image container */}
+              <div className="relative w-80 h-80 md:w-96 md:h-96 lg:w-[450px] lg:h-[450px] rounded-full overflow-hidden border-4 border-primary/50 shadow-2xl shadow-primary/20">
+                <img
+                  src={heroFood}
+                  alt="Delicious Indian vegetarian thali"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              {/* Floating decorative elements */}
+              <div className="absolute -top-4 -right-4 w-8 h-8 bg-primary rounded-full animate-pulse" />
+              <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-accent rounded-full animate-pulse delay-300" />
             </div>
           </motion.div>
         </div>
