@@ -64,22 +64,27 @@ const HeroSection = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="order-1 lg:order-2 flex justify-center"
           >
-            <div className="relative">
+            <div className="relative group">
               {/* Glowing background effect */}
-              <div className="absolute inset-0 bg-primary/30 rounded-full blur-3xl scale-110" />
-              {/* Decorative ring */}
-              <div className="absolute inset-0 rounded-full border-4 border-primary/30 scale-105" />
+              <div className="absolute inset-0 bg-primary/30 rounded-full blur-3xl scale-110 group-hover:bg-primary/40 transition-colors duration-500" />
+              {/* Rotating decorative ring */}
+              <div className="absolute inset-0 rounded-full border-4 border-dashed border-primary/20 scale-110 animate-spin-slow" />
+              {/* Static decorative ring */}
+              <div className="absolute inset-0 rounded-full border-4 border-primary/30 scale-105 group-hover:scale-110 transition-transform duration-500" />
               {/* Main circular image container */}
-              <div className="relative w-80 h-80 md:w-96 md:h-96 lg:w-[450px] lg:h-[450px] rounded-full overflow-hidden border-4 border-primary/50 shadow-2xl shadow-primary/20">
+              <div className="relative w-80 h-80 md:w-96 md:h-96 lg:w-[450px] lg:h-[450px] rounded-full overflow-hidden border-4 border-primary/50 shadow-2xl shadow-primary/20 group-hover:shadow-primary/40 group-hover:scale-105 transition-all duration-500 cursor-pointer">
                 <img
                   src={heroFood}
                   alt="Delicious Indian vegetarian thali"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
+                {/* Hover overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </div>
               {/* Floating decorative elements */}
-              <div className="absolute -top-4 -right-4 w-8 h-8 bg-primary rounded-full animate-pulse" />
-              <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-accent rounded-full animate-pulse delay-300" />
+              <div className="absolute -top-4 -right-4 w-8 h-8 bg-primary rounded-full animate-float shadow-lg shadow-primary/50" />
+              <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-accent rounded-full animate-float shadow-lg shadow-accent/50" style={{ animationDelay: '1s' }} />
+              <div className="absolute top-1/2 -right-6 w-4 h-4 bg-primary/70 rounded-full animate-float" style={{ animationDelay: '0.5s' }} />
             </div>
           </motion.div>
         </div>
