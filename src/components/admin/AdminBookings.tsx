@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { CalendarCheck, Check, X, Clock, Users, Phone, Mail, MessageSquare } from 'lucide-react';
+import { CalendarCheck, Check, X, Clock, Users, Phone, Mail, MessageSquare, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
@@ -23,6 +26,7 @@ interface Booking {
   guests: number;
   special_requests: string | null;
   status: string;
+  table_number: number | null;
   created_at: string;
 }
 
@@ -31,6 +35,9 @@ const AdminBookings = () => {
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [filter, setFilter] = useState<'all' | 'pending' | 'accepted' | 'rejected'>('all');
+  const [acceptDialogOpen, setAcceptDialogOpen] = useState(false);
+  const [tableNumber, setTableNumber] = useState('');
+  const [bookingToAccept, setBookingToAccept] = useState<Booking | null>(null);
 
   useEffect(() => {
     loadBookings();
@@ -59,6 +66,47 @@ const AdminBookings = () => {
     
     setBookings(data || []);
     setLoading(false);
+  };
+
+  const openAcceptDialog = (booking: Booking) => {
+    setBookingToAccept(booking);
+    setTableNumber('');
+    setAcceptDialogOpen(true);
+  };
+
+  const confirmAccept = async () => {
+    if (!bookingToAccept) return;
+    
+    const tableNum = parseInt(tableNumber);
+    if (!tableNumber || isNaN(tableNum) || tableNum < 1) {
+      toast.error('Please enter a valid table number');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('table_bookings')
+      .update({ status: 'accepted', table_number: tableNum })
+      .eq('id', bookingToAccept.id);
+
+    if (error) {
+      toast.error('Failed to accept booking');
+      return;
+    }
+
+    // Create notification for the booking
+    await supabase.from('notifications').insert({
+      type: 'booking',
+      title: 'Booking Accepted',
+      message: `${bookingToAccept.name}'s booking for ${bookingToAccept.date} has been accepted. Table #${tableNum} assigned.`,
+    });
+
+    setBookings(prev => prev.map(b => 
+      b.id === bookingToAccept.id ? { ...b, status: 'accepted', table_number: tableNum } : b
+    ));
+    toast.success(`Booking accepted! Table #${tableNum} assigned.`);
+    setAcceptDialogOpen(false);
+    setBookingToAccept(null);
+    setSelectedBooking(null);
   };
 
   const updateStatus = async (id: string, status: string) => {
@@ -147,13 +195,13 @@ const AdminBookings = () => {
       {/* Bookings List */}
       <Card className="bg-card border-border">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <CardTitle className="flex items-center gap-2">
               <CalendarCheck className="h-5 w-5" />
               Reservations
             </CardTitle>
             <Tabs value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
-              <TabsList>
+              <TabsList className="flex-wrap h-auto">
                 <TabsTrigger value="all">All ({bookings.length})</TabsTrigger>
                 <TabsTrigger value="pending">Pending ({stats.pending})</TabsTrigger>
                 <TabsTrigger value="accepted">Accepted ({stats.accepted})</TabsTrigger>
@@ -167,22 +215,28 @@ const AdminBookings = () => {
             {filteredBookings.map((booking) => (
               <div
                 key={booking.id}
-                className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                     <span className="font-semibold text-primary">
                       {booking.name.charAt(0).toUpperCase()}
                     </span>
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <h4 className="font-semibold">{booking.name}</h4>
                       <Badge variant={getStatusColor(booking.status)}>
                         {booking.status}
                       </Badge>
+                      {booking.table_number && (
+                        <Badge variant="outline" className="text-primary border-primary">
+                          <MapPin className="h-3 w-3 mr-1" />
+                          Table #{booking.table_number}
+                        </Badge>
+                      )}
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mt-1">
                       <span className="flex items-center gap-1">
                         <CalendarCheck className="h-3 w-3" />
                         {formatDate(booking.date)}
@@ -195,7 +249,7 @@ const AdminBookings = () => {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 ml-16 lg:ml-0">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -207,7 +261,7 @@ const AdminBookings = () => {
                     <>
                       <Button
                         size="sm"
-                        onClick={() => updateStatus(booking.id, 'accepted')}
+                        onClick={() => openAcceptDialog(booking)}
                       >
                         <Check className="h-4 w-4 mr-1" />
                         Accept
@@ -234,6 +288,46 @@ const AdminBookings = () => {
         </CardContent>
       </Card>
 
+      {/* Accept Booking Dialog - Assign Table */}
+      <Dialog open={acceptDialogOpen} onOpenChange={setAcceptDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Accept Booking & Assign Table</DialogTitle>
+          </DialogHeader>
+          {bookingToAccept && (
+            <div className="space-y-4 py-4">
+              <div className="bg-muted/50 rounded-lg p-4">
+                <p className="font-medium">{bookingToAccept.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {formatDate(bookingToAccept.date)} at {bookingToAccept.time} • {bookingToAccept.guests} guests
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="tableNumber">Assign Table Number *</Label>
+                <Input
+                  id="tableNumber"
+                  type="number"
+                  min="1"
+                  value={tableNumber}
+                  onChange={(e) => setTableNumber(e.target.value)}
+                  placeholder="Enter table number (e.g., 5)"
+                  className="mt-2"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAcceptDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={confirmAccept}>
+              <Check className="h-4 w-4 mr-2" />
+              Accept & Assign Table
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Booking Details Dialog */}
       <Dialog open={!!selectedBooking} onOpenChange={() => setSelectedBooking(null)}>
         <DialogContent>
@@ -250,9 +344,17 @@ const AdminBookings = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold">{selectedBooking.name}</h3>
-                  <Badge variant={getStatusColor(selectedBooking.status)}>
-                    {selectedBooking.status}
-                  </Badge>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant={getStatusColor(selectedBooking.status)}>
+                      {selectedBooking.status}
+                    </Badge>
+                    {selectedBooking.table_number && (
+                      <Badge variant="outline" className="text-primary border-primary">
+                        <MapPin className="h-3 w-3 mr-1" />
+                        Table #{selectedBooking.table_number}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -312,8 +414,7 @@ const AdminBookings = () => {
                   <Button
                     className="flex-1"
                     onClick={() => {
-                      updateStatus(selectedBooking.id, 'accepted');
-                      setSelectedBooking(null);
+                      openAcceptDialog(selectedBooking);
                     }}
                   >
                     <Check className="h-4 w-4 mr-2" />

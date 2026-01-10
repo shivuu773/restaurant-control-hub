@@ -365,6 +365,7 @@ export type Database = {
           phone: string
           special_requests: string | null
           status: string | null
+          table_number: number | null
           time: string
           updated_at: string
           user_id: string | null
@@ -379,6 +380,7 @@ export type Database = {
           phone: string
           special_requests?: string | null
           status?: string | null
+          table_number?: number | null
           time: string
           updated_at?: string
           user_id?: string | null
@@ -393,6 +395,7 @@ export type Database = {
           phone?: string
           special_requests?: string | null
           status?: string | null
+          table_number?: number | null
           time?: string
           updated_at?: string
           user_id?: string | null
