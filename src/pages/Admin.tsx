@@ -10,6 +10,10 @@ import AdminMenu from '@/components/admin/AdminMenu';
 import AdminBookings from '@/components/admin/AdminBookings';
 import AdminMessages from '@/components/admin/AdminMessages';
 import AdminChat from '@/components/admin/AdminChat';
+import AdminGallery from '@/components/admin/AdminGallery';
+import AdminChefs from '@/components/admin/AdminChefs';
+import AdminEvents from '@/components/admin/AdminEvents';
+import AdminSettings from '@/components/admin/AdminSettings';
 
 const Admin = () => {
   const { user, isAdmin, isLoading, profile } = useAuth();
@@ -24,7 +28,6 @@ const Admin = () => {
 
   useEffect(() => {
     if (isAdmin) {
-      // Load initial notifications
       supabase
         .from('notifications')
         .select('*')
@@ -33,19 +36,14 @@ const Admin = () => {
         .limit(10)
         .then(({ data }) => setNotifications(data || []));
 
-      // Real-time subscription for new notifications
       const channel = supabase
         .channel('admin-notifications')
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'notifications' },
-          (payload) => setNotifications((prev) => [payload.new as any, ...prev])
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, (payload) => 
+          setNotifications((prev) => [payload.new as any, ...prev])
         )
         .subscribe();
 
-      return () => {
-        supabase.removeChannel(channel);
-      };
+      return () => { supabase.removeChannel(channel); };
     }
   }, [isAdmin]);
 
@@ -57,44 +55,34 @@ const Admin = () => {
     );
   }
 
-  if (!user || !isAdmin) {
-    return null;
-  }
+  if (!user || !isAdmin) return null;
 
   return (
     <div className="min-h-screen bg-background flex">
       <AdminSidebar />
-      
       <main className="admin-content">
-        {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h2 className="font-heading text-2xl">
-              Welcome back, {profile?.full_name || 'Admin'}
-            </h2>
-            <p className="text-muted-foreground">
-              Here's what's happening with your restaurant today.
-            </p>
+            <h2 className="font-heading text-2xl">Welcome back, {profile?.full_name || 'Admin'}</h2>
+            <p className="text-muted-foreground">Manage your restaurant from here.</p>
           </div>
-          <div className="relative">
-            <button className="p-2 rounded-lg hover:bg-muted transition-colors">
-              <Bell className="h-6 w-6" />
-              {notifications.length > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center">
-                  {notifications.length}
-                </Badge>
-              )}
-            </button>
-          </div>
+          <button className="relative p-2 rounded-lg hover:bg-muted transition-colors">
+            <Bell className="h-6 w-6" />
+            {notifications.length > 0 && (
+              <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center">{notifications.length}</Badge>
+            )}
+          </button>
         </div>
-
-        {/* Routes */}
         <Routes>
           <Route path="/" element={<AdminDashboard />} />
           <Route path="/menu" element={<AdminMenu />} />
           <Route path="/bookings" element={<AdminBookings />} />
           <Route path="/messages" element={<AdminMessages />} />
           <Route path="/chat" element={<AdminChat />} />
+          <Route path="/gallery" element={<AdminGallery />} />
+          <Route path="/chefs" element={<AdminChefs />} />
+          <Route path="/events" element={<AdminEvents />} />
+          <Route path="/settings" element={<AdminSettings />} />
         </Routes>
       </main>
     </div>

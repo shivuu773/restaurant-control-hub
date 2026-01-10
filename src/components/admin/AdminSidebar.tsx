@@ -7,7 +7,11 @@ import {
   UtensilsCrossed, 
   Users, 
   LogOut,
-  Home
+  Home,
+  Image,
+  ChefHat,
+  PartyPopper,
+  Settings
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -17,6 +21,10 @@ const navItems = [
   { icon: CalendarCheck, label: 'Bookings', path: '/admin/bookings' },
   { icon: MessageSquare, label: 'Messages', path: '/admin/messages' },
   { icon: Users, label: 'Live Chat', path: '/admin/chat' },
+  { icon: Image, label: 'Gallery', path: '/admin/gallery' },
+  { icon: ChefHat, label: 'Chefs', path: '/admin/chefs' },
+  { icon: PartyPopper, label: 'Events', path: '/admin/events' },
+  { icon: Settings, label: 'Settings', path: '/admin/settings' },
 ];
 
 const AdminSidebar = () => {
