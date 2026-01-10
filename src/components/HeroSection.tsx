@@ -2,14 +2,22 @@ import { motion } from 'framer-motion';
 import { Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import heroFood from '@/assets/hero-food.png';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 const HeroSection = () => {
+  const { settings } = useSiteSettings();
+
   const scrollToBooking = () => {
     const element = document.getElementById('book-a-table');
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  // Parse title to add highlight
+  const titleParts = settings.hero_title.split(' ');
+  const firstPart = titleParts.slice(0, Math.ceil(titleParts.length / 2)).join(' ');
+  const secondPart = titleParts.slice(Math.ceil(titleParts.length / 2)).join(' ');
 
   return (
     <section id="hero" className="relative min-h-screen flex items-center bg-section pt-20">
@@ -23,14 +31,12 @@ const HeroSection = () => {
             className="text-center lg:text-left order-2 lg:order-1"
           >
             <h2 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-              Enjoy Your Healthy
+              {firstPart}
               <br />
-              <span className="text-primary">Delicious Food</span>
+              <span className="text-primary">{secondPart || settings.hero_subtitle}</span>
             </h2>
             <p className="text-muted-foreground text-lg mb-8 max-w-xl mx-auto lg:mx-0">
-              May your dining experience be a delightful journey of flavors, where every dish 
-              brings you joy. May your taste buds revel in the exquisite creations and savor 
-              the essence of each bite. Here's to an unforgettable meal and satisfied smiles.
+              {settings.hero_description}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Button onClick={scrollToBooking} className="btn-book">
@@ -39,7 +45,7 @@ const HeroSection = () => {
               <Button
                 variant="outline"
                 className="group border-primary/50 hover:border-primary"
-                onClick={() => window.open('https://www.youtube.com/watch?v=vTA7li3tVV4', '_blank')}
+                onClick={() => window.open(settings.hero_video_url, '_blank')}
               >
                 <span className="flex items-center">
                   <span className="w-10 h-10 rounded-full bg-primary flex items-center justify-center mr-3 group-hover:scale-110 transition-transform">
