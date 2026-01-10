@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, User, LogOut, Shield, ChevronDown, LayoutDashboard } from 'lucide-react';
+import { Menu, X, User, LogOut, Shield, ChevronDown, LayoutDashboard, Leaf } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -47,7 +47,8 @@ const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center">
+          <Link to="/" className="flex items-center gap-2">
+            <Leaf className="h-8 w-8 text-primary" />
             <h1 className="font-display text-4xl font-bold">
               zayka<span className="text-primary">.</span>
             </h1>
@@ -64,15 +65,19 @@ const Header = () => {
             <button onClick={() => scrollToSection('menu')} className="nav-link">
               Menu
             </button>
-            <button onClick={() => scrollToSection('events')} className="nav-link">
-              Events
-            </button>
-            <button onClick={() => scrollToSection('chefs')} className="nav-link">
-              Chefs
-            </button>
-            <button onClick={() => scrollToSection('gallery')} className="nav-link">
-              Gallery
-            </button>
+            {user && (
+              <>
+                <button onClick={() => scrollToSection('events')} className="nav-link">
+                  Events
+                </button>
+                <button onClick={() => scrollToSection('chefs')} className="nav-link">
+                  Chefs
+                </button>
+                <button onClick={() => scrollToSection('gallery')} className="nav-link">
+                  Gallery
+                </button>
+              </>
+            )}
             <button onClick={() => scrollToSection('contact')} className="nav-link">
               Contact
             </button>
@@ -140,12 +145,14 @@ const Header = () => {
               </DropdownMenu>
             )}
 
-            <Button
-              onClick={() => scrollToSection('book-a-table')}
-              className="btn-book hidden sm:flex"
-            >
-              Book a Table
-            </Button>
+            {user && (
+              <Button
+                onClick={() => scrollToSection('book-a-table')}
+                className="btn-book hidden sm:flex"
+              >
+                Book a Table
+              </Button>
+            )}
 
             {/* Mobile menu button */}
             <button
@@ -174,15 +181,19 @@ const Header = () => {
               <button onClick={() => scrollToSection('menu')} className="nav-link text-left">
                 Menu
               </button>
-              <button onClick={() => scrollToSection('events')} className="nav-link text-left">
-                Events
-              </button>
-              <button onClick={() => scrollToSection('chefs')} className="nav-link text-left">
-                Chefs
-              </button>
-              <button onClick={() => scrollToSection('gallery')} className="nav-link text-left">
-                Gallery
-              </button>
+              {user && (
+                <>
+                  <button onClick={() => scrollToSection('events')} className="nav-link text-left">
+                    Events
+                  </button>
+                  <button onClick={() => scrollToSection('chefs')} className="nav-link text-left">
+                    Chefs
+                  </button>
+                  <button onClick={() => scrollToSection('gallery')} className="nav-link text-left">
+                    Gallery
+                  </button>
+                </>
+              )}
               <button onClick={() => scrollToSection('contact')} className="nav-link text-left">
                 Contact
               </button>
@@ -235,9 +246,11 @@ const Header = () => {
                   </Button>
                 </div>
               )}
-              <Button onClick={() => scrollToSection('book-a-table')} className="btn-book">
-                Book a Table
-              </Button>
+              {user && (
+                <Button onClick={() => scrollToSection('book-a-table')} className="btn-book">
+                  Book a Table
+                </Button>
+              )}
             </div>
           </nav>
         )}
