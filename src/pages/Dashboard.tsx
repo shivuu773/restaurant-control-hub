@@ -13,8 +13,10 @@ import {
   AlertCircle,
   Home,
   LogOut,
-  User
+  User,
+  X
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -89,8 +91,25 @@ const Dashboard = () => {
         return <Badge className="bg-green-500 hover:bg-green-600">Accepted</Badge>;
       case 'rejected':
         return <Badge variant="destructive">Rejected</Badge>;
+      case 'cancelled':
+        return <Badge variant="outline" className="text-muted-foreground">Cancelled</Badge>;
       default:
         return <Badge variant="secondary">Pending</Badge>;
+    }
+  };
+
+  const handleCancelBooking = async (bookingId: string) => {
+    const { error } = await supabase
+      .from('table_bookings')
+      .update({ status: 'cancelled' })
+      .eq('id', bookingId)
+      .eq('user_id', user?.id);
+    
+    if (error) {
+      toast.error('Failed to cancel booking');
+    } else {
+      toast.success('Booking cancelled successfully');
+      loadBookings();
     }
   };
 
@@ -253,8 +272,19 @@ const Dashboard = () => {
                               </p>
                             )}
                           </div>
-                          <div>
+                          <div className="flex items-center gap-2">
                             {getStatusBadge(booking.status)}
+                            {booking.status === 'pending' && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                                onClick={() => handleCancelBooking(booking.id)}
+                              >
+                                <X className="h-4 w-4 mr-1" />
+                                Cancel
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </div>
