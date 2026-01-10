@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, User, LogOut, Shield, ChevronDown } from 'lucide-react';
+import { Menu, X, User, LogOut, Shield, ChevronDown, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -99,15 +99,19 @@ const Header = () => {
                     <p className="text-xs text-muted-foreground">{user.email}</p>
                   </div>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    My Bookings
+                  </DropdownMenuItem>
                   {isAdmin && (
                     <>
                       <DropdownMenuItem onClick={() => navigate('/admin')} className="text-primary">
                         <Shield className="mr-2 h-4 w-4" />
                         Admin Panel
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator />
                     </>
                   )}
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign Out
@@ -182,7 +186,36 @@ const Header = () => {
               <button onClick={() => scrollToSection('contact')} className="nav-link text-left">
                 Contact
               </button>
-              {!user && (
+              {user ? (
+                <div className="flex flex-col gap-2 pt-4 border-t border-border">
+                  <Button 
+                    variant="outline"
+                    onClick={() => { navigate('/dashboard'); setIsMobileMenuOpen(false); }}
+                    className="w-full justify-start"
+                  >
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    My Bookings
+                  </Button>
+                  {isAdmin && (
+                    <Button 
+                      variant="outline"
+                      onClick={() => { navigate('/admin'); setIsMobileMenuOpen(false); }}
+                      className="w-full justify-start text-primary"
+                    >
+                      <Shield className="mr-2 h-4 w-4" />
+                      Admin Panel
+                    </Button>
+                  )}
+                  <Button 
+                    variant="ghost"
+                    onClick={() => { handleSignOut(); setIsMobileMenuOpen(false); }}
+                    className="w-full justify-start text-destructive"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </Button>
+                </div>
+              ) : (
                 <div className="flex flex-col gap-2 pt-4 border-t border-border">
                   <Button 
                     variant="outline"
