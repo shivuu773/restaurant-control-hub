@@ -36,7 +36,7 @@ const defaultMenuItems: Record<string, { name: string; price: number; image: str
   Starters: [
     { name: 'Vegetable Samosa', price: 180, image: dishSamosa, description: 'Crispy pastry with spiced potato filling' },
     { name: 'Paneer Tikka', price: 320, image: dishPaneerTikka, description: 'Grilled cottage cheese with bell peppers' },
-    { name: 'Tandoori Chicken', price: 380, image: dishTandoori, description: 'Classic tandoor-roasted chicken' },
+    { name: 'Hara Bhara Kebab', price: 280, image: dishPalakPaneer, description: 'Spinach and green peas patties' },
   ],
   Breakfast: [
     { name: 'Masala Dosa', price: 150, image: dishDosa, description: 'Crispy crepe with potato filling' },
@@ -44,14 +44,14 @@ const defaultMenuItems: Record<string, { name: string; price: number; image: str
     { name: 'Paneer Paratha', price: 140, image: dishPalakPaneer, description: 'Stuffed flatbread with cottage cheese' },
   ],
   Lunch: [
-    { name: 'Hyderabadi Biryani', price: 350, image: dishBiryani, description: 'Aromatic rice with tender meat' },
-    { name: 'Butter Chicken', price: 380, image: dishButterChicken, description: 'Creamy tomato chicken curry' },
+    { name: 'Veg Biryani', price: 320, image: dishBiryani, description: 'Aromatic rice with mixed vegetables' },
+    { name: 'Paneer Butter Masala', price: 350, image: dishPaneerTikka, description: 'Creamy tomato paneer curry' },
     { name: 'Dal Makhani', price: 280, image: dishDalMakhani, description: 'Slow-cooked creamy black lentils' },
   ],
   Dinner: [
     { name: 'Palak Paneer', price: 320, image: dishPalakPaneer, description: 'Cottage cheese in spinach gravy' },
-    { name: 'Chicken Biryani', price: 420, image: dishBiryani, description: 'Fragrant rice with spiced chicken' },
-    { name: 'Tandoori Platter', price: 550, image: dishTandoori, description: 'Assorted tandoor grilled items' },
+    { name: 'Malai Kofta', price: 360, image: dishPaneerTikka, description: 'Paneer dumplings in creamy gravy' },
+    { name: 'Veg Thali', price: 450, image: dishDalMakhani, description: 'Complete meal with variety of dishes' },
   ],
   Desserts: [
     { name: 'Gulab Jamun', price: 120, image: dishGulabJamun, description: 'Sweet milk balls in rose syrup' },
