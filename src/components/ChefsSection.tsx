@@ -2,18 +2,36 @@ import { motion } from 'framer-motion';
 import { Facebook, Twitter, Instagram } from 'lucide-react';
 import chef1 from '@/assets/chef-1.jpg';
 import chef2 from '@/assets/chef-2.jpg';
+import chef3 from '@/assets/chef-3.jpg';
+import chef4 from '@/assets/chef-4.jpg';
 
 const chefs = [
   {
     name: 'Rajan Kumar',
-    role: 'Master Chef',
+    role: 'Executive Chef',
     image: chef1,
+    bio: '15 years of culinary excellence',
     socials: { facebook: '#', twitter: '#', instagram: '#' },
   },
   {
     name: 'Priya Sharma',
-    role: 'Pastry Chef',
+    role: 'Head Pastry Chef',
     image: chef2,
+    bio: 'Specialist in Indian desserts',
+    socials: { facebook: '#', twitter: '#', instagram: '#' },
+  },
+  {
+    name: 'Vikram Singh',
+    role: 'Sous Chef',
+    image: chef3,
+    bio: 'Master of North Indian cuisine',
+    socials: { facebook: '#', twitter: '#', instagram: '#' },
+  },
+  {
+    name: 'Anita Patel',
+    role: 'Dessert Specialist',
+    image: chef4,
+    bio: 'Award-winning confectioner',
     socials: { facebook: '#', twitter: '#', instagram: '#' },
   },
 ];
@@ -29,7 +47,7 @@ const ChefsSection = () => {
         </div>
 
         {/* Chefs Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-4xl mx-auto">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {chefs.map((chef, index) => (
             <motion.div
               key={chef.name}
@@ -37,18 +55,18 @@ const ChefsSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="chef-card"
+              className="chef-card group"
             >
               <div className="relative overflow-hidden rounded-xl">
                 <img
                   src={chef.image}
                   alt={chef.name}
-                  className="w-full h-80 object-cover"
+                  className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 
                 {/* Overlay with social links */}
-                <div className="overlay flex items-end justify-center pb-20">
-                  <div className="flex space-x-4">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-24">
+                  <div className="flex space-x-3">
                     <a
                       href={chef.socials.facebook}
                       className="w-10 h-10 rounded-full bg-primary flex items-center justify-center hover:scale-110 transition-transform"
@@ -73,7 +91,8 @@ const ChefsSection = () => {
               
               <div className="text-center mt-4">
                 <h4 className="font-heading text-xl font-bold">{chef.name}</h4>
-                <p className="text-primary italic">{chef.role}</p>
+                <p className="text-primary font-medium">{chef.role}</p>
+                <p className="text-sm text-muted-foreground mt-1">{chef.bio}</p>
               </div>
             </motion.div>
           ))}

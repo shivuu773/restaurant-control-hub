@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, User, LogOut } from 'lucide-react';
+import { Menu, X, User, LogOut, Shield, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
@@ -82,39 +83,57 @@ const Header = () => {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full">
-                    <User className="h-5 w-5" />
+                  <Button variant="ghost" className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                      <User className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="hidden sm:inline font-medium">
+                      {profile?.full_name || 'User'}
+                    </span>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem className="font-medium">
-                    {profile?.full_name || user.email}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/profile')}>
-                    My Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/my-bookings')}>
-                    My Bookings
-                  </DropdownMenuItem>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="px-2 py-1.5">
+                    <p className="font-medium">{profile?.full_name || 'User'}</p>
+                    <p className="text-xs text-muted-foreground">{user.email}</p>
+                  </div>
+                  <DropdownMenuSeparator />
                   {isAdmin && (
-                    <DropdownMenuItem onClick={() => navigate('/admin')}>
-                      Admin Panel
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuItem onClick={() => navigate('/admin')} className="text-primary">
+                        <Shield className="mr-2 h-4 w-4" />
+                        Admin Panel
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
                   )}
-                  <DropdownMenuItem onClick={handleSignOut}>
+                  <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button
-                variant="ghost"
-                onClick={() => navigate('/auth')}
-                className="hidden sm:flex"
-              >
-                Login
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="hidden sm:flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Login
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => navigate('/auth')}>
+                    <User className="mr-2 h-4 w-4" />
+                    Customer Login
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/auth?type=admin')}>
+                    <Shield className="mr-2 h-4 w-4" />
+                    Admin Login
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
 
             <Button
@@ -164,9 +183,24 @@ const Header = () => {
                 Contact
               </button>
               {!user && (
-                <Button onClick={() => { navigate('/auth'); setIsMobileMenuOpen(false); }}>
-                  Login
-                </Button>
+                <div className="flex flex-col gap-2 pt-4 border-t border-border">
+                  <Button 
+                    variant="outline"
+                    onClick={() => { navigate('/auth'); setIsMobileMenuOpen(false); }}
+                    className="w-full justify-start"
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    Customer Login
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => { navigate('/auth?type=admin'); setIsMobileMenuOpen(false); }}
+                    className="w-full justify-start"
+                  >
+                    <Shield className="mr-2 h-4 w-4" />
+                    Admin Login
+                  </Button>
+                </div>
               )}
               <Button onClick={() => scrollToSection('book-a-table')} className="btn-book">
                 Book a Table
