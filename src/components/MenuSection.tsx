@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
-
+import { MenuSkeleton } from '@/components/skeletons/MenuSkeleton';
 // Import fallback dish images
 import dishSamosa from '@/assets/dish-samosa.jpg';
 import dishButterChicken from '@/assets/dish-butter-chicken.jpg';
@@ -99,9 +99,11 @@ const MenuSection = () => {
     return (
       <section id="menu" className="py-20 bg-background">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div className="section-header">
+            <h2>Our Menu</h2>
+            <p>Check Our <span>Yummy Menu</span></p>
           </div>
+          <MenuSkeleton />
         </div>
       </section>
     );

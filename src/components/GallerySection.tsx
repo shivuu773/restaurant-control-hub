@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
+import { GallerySkeleton } from '@/components/skeletons/GallerySkeleton';
 import menu1 from '@/assets/menu-1.jpg';
 import menu2 from '@/assets/menu-2.jpg';
 import menu3 from '@/assets/menu-3.jpg';
@@ -28,7 +29,8 @@ const defaultImages = [
 ];
 
 const GallerySection = () => {
-  const [images, setImages] = useState<GalleryImage[]>(defaultImages);
+  const [images, setImages] = useState<GalleryImage[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadImages = async () => {
@@ -39,7 +41,10 @@ const GallerySection = () => {
       
       if (data && data.length > 0) {
         setImages(data);
+      } else {
+        setImages(defaultImages);
       }
+      setLoading(false);
     };
     loadImages();
   }, []);
@@ -54,29 +59,33 @@ const GallerySection = () => {
         </div>
 
         {/* Gallery Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {images.map((image, index) => (
-            <motion.div
-              key={image.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-              className="relative group overflow-hidden rounded-xl cursor-pointer"
-            >
-              <img
-                src={image.image_url}
-                alt={image.title || 'Gallery image'}
-                className="w-full h-48 md:h-56 object-cover transition-transform duration-500 group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/40 transition-colors duration-300 flex items-center justify-center">
-                <p className="text-foreground font-heading text-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-4 group-hover:translate-y-0">
-                  {image.title}
-                </p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        {loading ? (
+          <GallerySkeleton />
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {images.map((image, index) => (
+              <motion.div
+                key={image.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                className="relative group overflow-hidden rounded-xl cursor-pointer"
+              >
+                <img
+                  src={image.image_url}
+                  alt={image.title || 'Gallery image'}
+                  className="w-full h-48 md:h-56 object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/40 transition-colors duration-300 flex items-center justify-center">
+                  <p className="text-foreground font-heading text-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-4 group-hover:translate-y-0">
+                    {image.title}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
