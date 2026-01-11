@@ -14,6 +14,7 @@ import ChatWidget from '@/components/ChatWidget';
 import ParallaxSection from '@/components/ParallaxSection';
 import ParallaxBackground from '@/components/ParallaxBackground';
 import SectionWrapper from '@/components/SectionWrapper';
+import ScrollProgressBar from '@/components/ScrollProgressBar';
 import { useAuth } from '@/contexts/AuthContext';
 import { Leaf } from 'lucide-react';
 
@@ -22,6 +23,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
+      <ScrollProgressBar />
       <Header />
       
       {/* Hero with parallax background */}
