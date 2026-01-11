@@ -8,6 +8,8 @@ interface Profile {
   full_name: string | null;
   phone: string | null;
   avatar_url: string | null;
+  dietary_preferences: string[] | null;
+  role: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -36,7 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, user_id, full_name, phone, avatar_url, created_at, updated_at')
+      .select('id, user_id, full_name, phone, avatar_url, dietary_preferences, role, created_at, updated_at')
       .eq('user_id', userId)
       .maybeSingle();
 
