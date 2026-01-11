@@ -16,6 +16,7 @@ import ParallaxBackground from '@/components/ParallaxBackground';
 import SectionWrapper from '@/components/SectionWrapper';
 import ScrollProgressBar from '@/components/ScrollProgressBar';
 import SectionNav from '@/components/SectionNav';
+import CursorGlow from '@/components/CursorGlow';
 import { useAuth } from '@/contexts/AuthContext';
 import { Leaf } from 'lucide-react';
 
@@ -24,6 +25,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
+      <CursorGlow />
       <ScrollProgressBar />
       <SectionNav />
       <Header />
