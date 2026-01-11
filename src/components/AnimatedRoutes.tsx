@@ -5,6 +5,7 @@ import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
 import Admin from "@/pages/Admin";
 import Dashboard from "@/pages/Dashboard";
+import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
 
 const AnimatedRoutes = () => {
@@ -34,6 +35,14 @@ const AnimatedRoutes = () => {
           element={
             <PageTransition>
               <Dashboard />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <PageTransition>
+              <Profile />
             </PageTransition>
           }
         />

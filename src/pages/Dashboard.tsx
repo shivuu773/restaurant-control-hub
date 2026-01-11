@@ -147,6 +147,10 @@ const Dashboard = () => {
             <span className="text-muted-foreground hidden sm:inline">| My Dashboard</span>
           </div>
           <div className="flex items-center gap-3">
+            <Button variant="ghost" onClick={() => navigate('/profile')}>
+              <User className="h-4 w-4 mr-2" />
+              Profile
+            </Button>
             <Button variant="ghost" onClick={() => navigate('/')}>
               <Home className="h-4 w-4 mr-2" />
               Home
