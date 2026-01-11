@@ -24,11 +24,21 @@ const BookingSection = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!user) {
+      toast({ 
+        title: 'Authentication Required', 
+        description: 'Please log in to make a reservation.', 
+        variant: 'destructive' 
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
 
     try {
       const { error } = await supabase.from('table_bookings').insert({
-        user_id: user?.id || null,
+        user_id: user.id,
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
