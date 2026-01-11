@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import { Shield, User, Mail, Lock, ArrowLeft, Leaf } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import MFAVerification from '@/components/auth/MFAVerification';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -18,19 +19,46 @@ const Auth = () => {
   const [fullName, setFullName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [showMFAVerification, setShowMFAVerification] = useState(false);
   const { signIn, signUp, user, isAdmin } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Check MFA status on auth state change
   useEffect(() => {
-    if (user) {
-      if (isAdminMode && isAdmin) {
-        navigate('/admin');
-      } else if (!isAdminMode) {
+    const checkMFAStatus = async () => {
+      if (user && isAdminMode) {
+        const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+        
+        if (!error && data) {
+          // If user has MFA enabled but hasn't verified yet (aal1 but needs aal2)
+          if (data.currentLevel === 'aal1' && data.nextLevel === 'aal2') {
+            setShowMFAVerification(true);
+            return;
+          }
+          
+          // If already at aal2 or no MFA required, proceed
+          if (isAdmin) {
+            navigate('/admin');
+          }
+        }
+      } else if (user && !isAdminMode) {
         navigate('/');
       }
-    }
+    };
+    
+    checkMFAStatus();
   }, [user, isAdmin, isAdminMode, navigate]);
+
+  const handleMFASuccess = () => {
+    setShowMFAVerification(false);
+    navigate('/admin');
+  };
+
+  const handleMFACancel = async () => {
+    await supabase.auth.signOut();
+    setShowMFAVerification(false);
+  };
 
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
@@ -86,6 +114,28 @@ const Auth = () => {
       setIsLoading(false);
     }
   };
+
+  // Show MFA verification screen
+  if (showMFAVerification) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
+        </div>
+        
+        <div className="w-full max-w-md relative z-10">
+          <div className="bg-card rounded-2xl p-8 shadow-xl border border-border">
+            <MFAVerification
+              onSuccess={handleMFASuccess}
+              onCancel={handleMFACancel}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">

@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-
+import AdminTwoFactorAuth from './AdminTwoFactorAuth';
 interface SiteSettings {
   // General
   restaurant_name: string;
@@ -160,8 +160,9 @@ const AdminSettings = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="general">
+      <Tabs defaultValue="security">
         <TabsList className="flex-wrap h-auto gap-1">
+          <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="hero">Hero</TabsTrigger>
           <TabsTrigger value="about">About</TabsTrigger>
@@ -170,6 +171,10 @@ const AdminSettings = () => {
           <TabsTrigger value="contact">Contact</TabsTrigger>
           <TabsTrigger value="social">Social</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="security" className="space-y-4">
+          <AdminTwoFactorAuth />
+        </TabsContent>
 
         <TabsContent value="general" className="space-y-4">
           <Card>
