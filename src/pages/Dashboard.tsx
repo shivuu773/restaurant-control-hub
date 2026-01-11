@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import OrderHistory from '@/components/OrderHistory';
+import MyReviews from '@/components/MyReviews';
 
 interface Booking {
   id: string;
@@ -332,8 +333,11 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* Order History */}
-        <OrderHistory />
+        {/* Order History & Reviews */}
+        <div className="grid lg:grid-cols-2 gap-6">
+          <OrderHistory />
+          <MyReviews />
+        </div>
 
         {/* Past Bookings */}
         {pastBookings.length > 0 && (
