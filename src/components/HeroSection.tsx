@@ -3,11 +3,22 @@ import { Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import heroFood from '@/assets/hero-food.png';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const HeroSection = () => {
   const { settings } = useSiteSettings();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const scrollToBooking = () => {
+    if (!user) {
+      toast.info('Please log in to book a table');
+      navigate('/auth');
+      return;
+    }
+    
     const element = document.getElementById('book-a-table');
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
