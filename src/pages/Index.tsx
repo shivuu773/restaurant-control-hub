@@ -15,6 +15,7 @@ import ParallaxSection from '@/components/ParallaxSection';
 import ParallaxBackground from '@/components/ParallaxBackground';
 import SectionWrapper from '@/components/SectionWrapper';
 import ScrollProgressBar from '@/components/ScrollProgressBar';
+import SectionNav from '@/components/SectionNav';
 import { useAuth } from '@/contexts/AuthContext';
 import { Leaf } from 'lucide-react';
 
@@ -24,10 +25,12 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
       <ScrollProgressBar />
+      <SectionNav />
       <Header />
       
       {/* Hero with parallax background */}
       <SectionWrapper 
+        id="hero"
         bgColor="hsl(var(--background))" 
         accentColor="hsl(var(--primary) / 0.15)"
       >
@@ -43,6 +46,7 @@ const Index = () => {
       
       {/* About Section with color transition */}
       <SectionWrapper 
+        id="about"
         bgColor="hsl(var(--section))" 
         accentColor="hsl(var(--primary) / 0.2)"
       >
@@ -53,6 +57,7 @@ const Index = () => {
       
       {/* Why Us Section with warm accent */}
       <SectionWrapper 
+        id="why-us"
         bgColor="hsl(var(--section))" 
         accentColor="hsl(var(--accent) / 0.25)"
       >
@@ -63,6 +68,7 @@ const Index = () => {
       
       {/* Stats Section with primary glow */}
       <SectionWrapper 
+        id="stats"
         bgColor="hsl(var(--background))" 
         accentColor="hsl(var(--primary) / 0.3)"
       >
@@ -73,6 +79,7 @@ const Index = () => {
       
       {/* Menu Section with rich accent */}
       <SectionWrapper 
+        id="menu"
         bgColor="hsl(var(--section))" 
         accentColor="hsl(var(--primary) / 0.2)"
       >
@@ -85,6 +92,7 @@ const Index = () => {
         <>
           {/* Events with warm glow */}
           <SectionWrapper 
+            id="events"
             bgColor="hsl(var(--background))" 
             accentColor="hsl(var(--accent) / 0.2)"
           >
@@ -95,6 +103,7 @@ const Index = () => {
           
           {/* Chefs with primary accent */}
           <SectionWrapper 
+            id="chefs"
             bgColor="hsl(var(--section))" 
             accentColor="hsl(var(--primary) / 0.25)"
           >
@@ -105,6 +114,7 @@ const Index = () => {
           
           {/* Gallery with mixed accents */}
           <SectionWrapper 
+            id="gallery"
             bgColor="hsl(var(--background))" 
             accentColor="hsl(var(--primary) / 0.15)"
           >
@@ -114,6 +124,7 @@ const Index = () => {
           
           {/* Booking with warm inviting glow */}
           <SectionWrapper 
+            id="booking"
             bgColor="hsl(var(--section))" 
             accentColor="hsl(var(--accent) / 0.3)"
           >
@@ -153,6 +164,7 @@ const Index = () => {
       
       {/* Contact with deep accent */}
       <SectionWrapper 
+        id="contact"
         bgColor="hsl(var(--background))" 
         accentColor="hsl(var(--primary) / 0.2)"
       >
