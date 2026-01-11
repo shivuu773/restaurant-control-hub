@@ -18,10 +18,10 @@ import {
   ArrowLeft, 
   Home,
   Leaf,
-  X,
   Check,
   Loader2
 } from 'lucide-react';
+import SessionManagement from '@/components/SessionManagement';
 
 const DIETARY_OPTIONS = [
   'Vegan',
@@ -354,6 +354,9 @@ const Profile = () => {
               )}
             </CardContent>
           </Card>
+
+          {/* Session Management */}
+          <SessionManagement />
 
           {/* Save Button */}
           <Button 
