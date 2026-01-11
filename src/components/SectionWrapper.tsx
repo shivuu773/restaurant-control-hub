@@ -46,7 +46,7 @@ const SectionWrapper = ({
       
       {/* Top fade edge */}
       <div 
-        className="absolute top-0 left-0 right-0 h-24 pointer-events-none z-10"
+        className="absolute top-0 left-0 right-0 h-24 pointer-events-none"
         style={{
           background: `linear-gradient(to bottom, ${bgColor}, transparent)`
         }}
@@ -54,13 +54,13 @@ const SectionWrapper = ({
       
       {/* Bottom fade edge */}
       <div 
-        className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none z-10"
+        className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none"
         style={{
           background: `linear-gradient(to top, ${bgColor}, transparent)`
         }}
       />
       
-      <div className="relative z-0">
+      <div className="relative z-10">
         {children}
       </div>
     </div>
