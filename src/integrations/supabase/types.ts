@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       chat_conversations: {
         Row: {
+          chat_mode: string
           created_at: string
           id: string
           is_active: boolean | null
@@ -23,6 +24,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          chat_mode?: string
           created_at?: string
           id?: string
           is_active?: boolean | null
@@ -30,6 +32,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          chat_mode?: string
           created_at?: string
           id?: string
           is_active?: boolean | null
@@ -43,6 +46,7 @@ export type Database = {
           conversation_id: string
           created_at: string
           id: string
+          is_ai_response: boolean | null
           is_from_admin: boolean | null
           is_read: boolean | null
           message: string
@@ -52,6 +56,7 @@ export type Database = {
           conversation_id: string
           created_at?: string
           id?: string
+          is_ai_response?: boolean | null
           is_from_admin?: boolean | null
           is_read?: boolean | null
           message: string
@@ -61,6 +66,7 @@ export type Database = {
           conversation_id?: string
           created_at?: string
           id?: string
+          is_ai_response?: boolean | null
           is_from_admin?: boolean | null
           is_read?: boolean | null
           message?: string

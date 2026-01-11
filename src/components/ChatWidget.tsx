@@ -1,18 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, Send, User } from 'lucide-react';
+import { MessageCircle, X, Send, User, Bot, UserCog, ArrowLeftRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 
 interface Message {
   id: string;
   message: string;
   is_from_admin: boolean;
+  is_ai_response?: boolean;
   created_at: string;
 }
+
+type ChatMode = 'bot' | 'manager';
 
 const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,6 +24,8 @@ const ChatWidget = () => {
   const [input, setInput] = useState('');
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAiTyping, setIsAiTyping] = useState(false);
+  const [chatMode, setChatMode] = useState<ChatMode>('bot');
   const { user, profile } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -46,7 +52,7 @@ const ChatWidget = () => {
         (payload) => {
           const newMsg = payload.new as Message;
           // Only add if it's from admin (user messages are added optimistically)
-          if (newMsg.is_from_admin) {
+          if (newMsg.is_from_admin && !newMsg.is_ai_response) {
             setMessages((prev) => [...prev, newMsg]);
           }
         }
@@ -70,13 +76,14 @@ const ChatWidget = () => {
       // Check for existing conversation
       const { data: existing } = await supabase
         .from('chat_conversations')
-        .select('id')
+        .select('id, chat_mode')
         .eq('user_id', user.id)
         .eq('is_active', true)
         .maybeSingle();
       
       if (existing) {
         setConversationId(existing.id);
+        setChatMode((existing.chat_mode as ChatMode) || 'bot');
         
         // Load existing messages
         const { data: msgs } = await supabase
@@ -90,7 +97,7 @@ const ChatWidget = () => {
         // Create new conversation
         const { data: newConv, error } = await supabase
           .from('chat_conversations')
-          .insert({ user_id: user.id })
+          .insert({ user_id: user.id, chat_mode: 'bot' })
           .select()
           .single();
         
@@ -102,12 +109,14 @@ const ChatWidget = () => {
         
         if (newConv) {
           setConversationId(newConv.id);
+          setChatMode('bot');
           
           // Add welcome message
           const welcomeMsg: Message = {
             id: 'welcome',
-            message: `Hello ${profile?.full_name || 'there'}! 👋 Welcome to Zayka. How can we help you today?`,
+            message: `Hello ${profile?.full_name || 'there'}! 👋 I'm Zayka's AI assistant. I can help you with menu recommendations, reservations, and general questions. How can I assist you today?`,
             is_from_admin: true,
+            is_ai_response: true,
             created_at: new Date().toISOString(),
           };
           setMessages([welcomeMsg]);
@@ -118,6 +127,164 @@ const ChatWidget = () => {
       toast.error('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const switchToManagerMode = async () => {
+    if (!conversationId) return;
+    
+    try {
+      await supabase
+        .from('chat_conversations')
+        .update({ chat_mode: 'manager' })
+        .eq('id', conversationId);
+      
+      setChatMode('manager');
+      
+      // Add system message about mode switch
+      const switchMsg: Message = {
+        id: `switch-${Date.now()}`,
+        message: "You're now connected with our restaurant manager. They'll respond to you shortly. 👨‍💼",
+        is_from_admin: true,
+        is_ai_response: false,
+        created_at: new Date().toISOString(),
+      };
+      setMessages(prev => [...prev, switchMsg]);
+      
+      // Save switch message to database
+      await supabase.from('chat_messages').insert({
+        conversation_id: conversationId,
+        sender_id: user!.id,
+        message: switchMsg.message,
+        is_from_admin: true,
+        is_ai_response: false,
+      });
+      
+      toast.success('Connected to restaurant manager');
+    } catch (error) {
+      console.error('Error switching mode:', error);
+      toast.error('Failed to switch mode');
+    }
+  };
+
+  const switchToBotMode = async () => {
+    if (!conversationId) return;
+    
+    try {
+      await supabase
+        .from('chat_conversations')
+        .update({ chat_mode: 'bot' })
+        .eq('id', conversationId);
+      
+      setChatMode('bot');
+      
+      // Add system message about mode switch
+      const switchMsg: Message = {
+        id: `switch-${Date.now()}`,
+        message: "You're now chatting with Zayka's AI assistant. How can I help you? 🤖",
+        is_from_admin: true,
+        is_ai_response: true,
+        created_at: new Date().toISOString(),
+      };
+      setMessages(prev => [...prev, switchMsg]);
+      
+      toast.success('Switched to AI assistant');
+    } catch (error) {
+      console.error('Error switching mode:', error);
+      toast.error('Failed to switch mode');
+    }
+  };
+
+  const getAIResponse = async (userMessage: string) => {
+    setIsAiTyping(true);
+    
+    try {
+      // Prepare conversation history for AI
+      const conversationHistory = messages
+        .filter(m => m.id !== 'welcome')
+        .slice(-10) // Last 10 messages for context
+        .map(m => ({
+          role: m.is_from_admin ? 'assistant' : 'user',
+          content: m.message,
+        }));
+      
+      conversationHistory.push({ role: 'user', content: userMessage });
+
+      const { data, error } = await supabase.functions.invoke('chat-bot', {
+        body: { 
+          messages: conversationHistory,
+          restaurantName: 'Zayka'
+        }
+      });
+
+      if (error) {
+        console.error('AI response error:', error);
+        throw error;
+      }
+
+      const aiMessage = data.message || "I'm sorry, I couldn't process that. Please try again.";
+      const shouldEscalate = data.shouldEscalate;
+
+      // Save AI response to database
+      const { data: savedMsg, error: saveError } = await supabase
+        .from('chat_messages')
+        .insert({
+          conversation_id: conversationId,
+          sender_id: user!.id,
+          message: aiMessage,
+          is_from_admin: true,
+          is_ai_response: true,
+        })
+        .select()
+        .single();
+
+      if (saveError) {
+        console.error('Error saving AI message:', saveError);
+      }
+
+      // Add AI response to UI
+      const aiResponseMsg: Message = {
+        id: savedMsg?.id || `ai-${Date.now()}`,
+        message: aiMessage,
+        is_from_admin: true,
+        is_ai_response: true,
+        created_at: new Date().toISOString(),
+      };
+      setMessages(prev => [...prev, aiResponseMsg]);
+
+      // If AI suggests escalation, offer to switch modes
+      if (shouldEscalate) {
+        setTimeout(() => {
+          toast('Would you like to speak with a manager?', {
+            action: {
+              label: 'Yes, connect me',
+              onClick: switchToManagerMode,
+            },
+          });
+        }, 1000);
+      }
+
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      
+      // Add fallback message
+      const fallbackMsg: Message = {
+        id: `fallback-${Date.now()}`,
+        message: "I'm having trouble responding right now. Would you like to speak with our restaurant manager instead?",
+        is_from_admin: true,
+        is_ai_response: true,
+        created_at: new Date().toISOString(),
+      };
+      setMessages(prev => [...prev, fallbackMsg]);
+      
+      toast('AI is unavailable', {
+        action: {
+          label: 'Talk to Manager',
+          onClick: switchToManagerMode,
+        },
+      });
+    } finally {
+      setIsAiTyping(false);
     }
   };
 
@@ -143,7 +310,8 @@ const ChatWidget = () => {
           conversation_id: conversationId, 
           sender_id: user.id, 
           message: messageText, 
-          is_from_admin: false 
+          is_from_admin: false,
+          is_ai_response: false,
         })
         .select()
         .single();
@@ -151,7 +319,6 @@ const ChatWidget = () => {
       if (error) {
         console.error('Error sending message:', error);
         toast.error('Failed to send message. Please try again.');
-        // Remove optimistic message on error
         setMessages(prev => prev.filter(m => m.id !== optimisticMsg.id));
         setInput(messageText);
         return;
@@ -165,6 +332,11 @@ const ChatWidget = () => {
         .from('chat_conversations')
         .update({ updated_at: new Date().toISOString() })
         .eq('id', conversationId);
+      
+      // If in bot mode, get AI response
+      if (chatMode === 'bot') {
+        await getAIResponse(messageText);
+      }
         
     } catch (error) {
       console.error('Error sending message:', error);
@@ -203,11 +375,22 @@ const ChatWidget = () => {
           <div className="bg-primary p-4 flex justify-between items-center">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
-                <MessageCircle className="h-5 w-5 text-primary-foreground" />
+                {chatMode === 'bot' ? (
+                  <Bot className="h-5 w-5 text-primary-foreground" />
+                ) : (
+                  <UserCog className="h-5 w-5 text-primary-foreground" />
+                )}
               </div>
               <div>
-                <h3 className="font-heading text-primary-foreground font-semibold">Chat with Us</h3>
-                <p className="text-xs text-primary-foreground/80">We typically reply instantly</p>
+                <h3 className="font-heading text-primary-foreground font-semibold flex items-center gap-2">
+                  {chatMode === 'bot' ? 'AI Assistant' : 'Restaurant Manager'}
+                  <Badge variant="secondary" className="text-xs">
+                    {chatMode === 'bot' ? '🤖 Bot' : '👨‍💼 Live'}
+                  </Badge>
+                </h3>
+                <p className="text-xs text-primary-foreground/80">
+                  {chatMode === 'bot' ? 'Instant AI responses' : 'Manager will reply soon'}
+                </p>
               </div>
             </div>
             <button 
@@ -218,14 +401,25 @@ const ChatWidget = () => {
             </button>
           </div>
           
-          {/* User Info Bar */}
-          <div className="px-4 py-2 bg-muted/50 border-b border-border flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
-              <User className="h-3 w-3 text-primary" />
+          {/* Mode Toggle Bar */}
+          <div className="px-4 py-2 bg-muted/50 border-b border-border flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+                <User className="h-3 w-3 text-primary" />
+              </div>
+              <span className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">{profile?.full_name || 'Guest'}</span>
+              </span>
             </div>
-            <span className="text-sm text-muted-foreground">
-              Chatting as <span className="font-medium text-foreground">{profile?.full_name || 'Guest'}</span>
-            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={chatMode === 'bot' ? switchToManagerMode : switchToBotMode}
+              className="text-xs gap-1"
+            >
+              <ArrowLeftRight className="h-3 w-3" />
+              {chatMode === 'bot' ? 'Talk to Manager' : 'Back to AI'}
+            </Button>
           </div>
           
           {/* Messages */}
@@ -248,6 +442,18 @@ const ChatWidget = () => {
                           : 'bg-primary text-primary-foreground rounded-br-md'
                       }`}
                     >
+                      {msg.is_from_admin && (
+                        <div className="flex items-center gap-1 mb-1">
+                          {msg.is_ai_response ? (
+                            <Bot className="h-3 w-3 text-muted-foreground" />
+                          ) : (
+                            <UserCog className="h-3 w-3 text-muted-foreground" />
+                          )}
+                          <span className="text-xs text-muted-foreground">
+                            {msg.is_ai_response ? 'AI' : 'Manager'}
+                          </span>
+                        </div>
+                      )}
                       <p className="break-words text-sm">{msg.message}</p>
                       <p className={`text-xs mt-1 ${
                         msg.is_from_admin ? 'text-muted-foreground' : 'text-primary-foreground/70'
@@ -257,6 +463,23 @@ const ChatWidget = () => {
                     </div>
                   </div>
                 ))}
+                
+                {/* AI Typing Indicator */}
+                {isAiTyping && (
+                  <div className="flex justify-start">
+                    <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
+                      <div className="flex items-center gap-1">
+                        <Bot className="h-3 w-3 text-muted-foreground mr-2" />
+                        <div className="flex gap-1">
+                          <span className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                          <span className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                          <span className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 <div ref={messagesEndRef} />
               </>
             )}
@@ -267,15 +490,15 @@ const ChatWidget = () => {
             <Input 
               value={input} 
               onChange={(e) => setInput(e.target.value)} 
-              placeholder="Type a message..." 
+              placeholder={chatMode === 'bot' ? "Ask me anything..." : "Message the manager..."} 
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-              disabled={isLoading}
+              disabled={isLoading || isAiTyping}
               className="flex-1"
             />
             <Button 
               size="icon" 
               onClick={sendMessage}
-              disabled={!input.trim() || isLoading}
+              disabled={!input.trim() || isLoading || isAiTyping}
             >
               <Send className="h-4 w-4" />
             </Button>
