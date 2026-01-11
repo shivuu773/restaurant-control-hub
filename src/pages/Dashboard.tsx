@@ -31,6 +31,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
+import OrderHistory from '@/components/OrderHistory';
 
 interface Booking {
   id: string;
@@ -330,6 +331,9 @@ const Dashboard = () => {
             </div>
           )}
         </div>
+
+        {/* Order History */}
+        <OrderHistory />
 
         {/* Past Bookings */}
         {pastBookings.length > 0 && (
